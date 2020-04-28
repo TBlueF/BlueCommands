@@ -26,7 +26,7 @@ package de.bluecolored.bluecommands.exceptions;
 
 import de.bluecolored.bluecommands.CommandContext;
 
-public class InsufficientPermissionException extends Exception {
+public class InsufficientPermissionException extends CommandFormatException {
 	private static final long serialVersionUID = -1476479614759809202L;
 
 	private String permission;

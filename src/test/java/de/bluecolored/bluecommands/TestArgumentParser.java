@@ -37,10 +37,20 @@ public class TestArgumentParser implements ArgumentParser<CommandContext> {
 		
 		if (argumentsString.isEmpty()) throw new CommandArgumentException("Not enough arguments!", argumentsString, type, this);
 		
-		String result = argumentsString.split(" ", 2)[0];
+		String result;
+		int consumed;
+		int nextSpace = argumentsString.indexOf(' ');
+		if (nextSpace < 0) {
+			result = argumentsString;
+			consumed = argumentsString.length();
+		} else {
+			result = argumentsString.substring(0, nextSpace);
+			consumed = nextSpace + 1;
+		}
+		
 		if (!result.startsWith("valid")) throw new CommandArgumentException("String has to start with 'valid'!", result, type, this);
 		
-		return new ParseResult(result, result.length());
+		return new ParseResult(result, consumed);
 	}
 
 	@Override

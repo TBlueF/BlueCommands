@@ -25,13 +25,16 @@
 package de.bluecolored.bluecommands;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import de.bluecolored.bluecommands.exceptions.CommandArgumentException;
+import de.bluecolored.bluecommands.exceptions.CommandFormatException;
 import de.bluecolored.bluecommands.exceptions.CommandNotFoundException;
 import de.bluecolored.bluecommands.exceptions.InsufficientContextException;
 import de.bluecolored.bluecommands.exceptions.InsufficientPermissionException;
@@ -39,7 +42,7 @@ import de.bluecolored.bluecommands.exceptions.InsufficientPermissionException;
 public class CommandHandler<C extends CommandContext> {
 
 	private ArgumentParserLibrary<? super C> parserLib;
-	private Map<String, CommandRegistration<C>> commands;
+	private Map<String, Collection<CommandRegistration<C>>> commands;
 	
 	public CommandHandler() {
 		this(new ArgumentParserLibrary<>());
@@ -61,20 +64,34 @@ public class CommandHandler<C extends CommandContext> {
 	 * @throws InsufficientPermissionException If the context has not the permission to execute the command
 	 * @throws CommandNotFoundException If there was no such command registered
 	 */
-	public synchronized Object execute(C context, String commandString) throws InvocationTargetException, CommandArgumentException, InsufficientContextException, InsufficientPermissionException, CommandNotFoundException {
+	public synchronized Object execute(C context, String commandString) throws InvocationTargetException, CommandFormatException {
 		int splitPoint = commandString.length();
 		
+		CommandFormatException commandException = null;
 		while (splitPoint > 0) {
 			String command = commandString.substring(0, splitPoint);
 			String arguments = splitPoint < commandString.length() ? commandString.substring(splitPoint + 1) : "";
 
-			CommandRegistration<C> reg = commands.get(command);
-			if (reg != null) return reg.execute(parserLib, context, arguments);
+			for (CommandRegistration<C> reg : getCommands(command)) {
+				try {
+					return reg.execute(parserLib, context, arguments);
+				} catch (CommandArgumentException | InsufficientContextException | InsufficientPermissionException e) {
+					if (commandException == null) {
+						commandException = e;
+					} else {
+						commandException.addSuppressed(e);
+					}
+				}
+			}
 			
 			splitPoint = commandString.lastIndexOf(' ', splitPoint - 1);
 		}
 		
-		throw new CommandNotFoundException();
+		if (commandException == null) {
+			commandException = new CommandNotFoundException();
+		}
+		
+		throw commandException;
 	}
 	
 	public synchronized Collection<String> suggest(C context, String commandString) {
@@ -97,22 +114,20 @@ public class CommandHandler<C extends CommandContext> {
 		Set<String> suggestions = new HashSet<>(); 
 		
 		int splitPoint = suggestString.length();
-		while (splitPoint > 0) {
+		boolean commandFound = false;
+		while (splitPoint > 0 && !commandFound) {
 			String command = suggestString.substring(0, splitPoint);
 			String arguments = splitPoint < suggestString.length() ? suggestString.substring(splitPoint + 1) : "";
 
-			CommandRegistration<C> reg = commands.get(command);
-			if (reg != null) {
+			for (CommandRegistration<C> reg : getCommands(command)) {
 				suggestions.addAll(reg.suggest(parserLib, context, arguments));
-				break;
+				commandFound = true;
 			}
 			
 			splitPoint = suggestString.lastIndexOf(' ', splitPoint - 1);
 		}
 		
-		if (suggestions.isEmpty()) {
-			suggestions.addAll(getDirectSubcommands(suggestString));
-		}
+		suggestions.addAll(getDirectSubcommands(suggestString));
 		
 		final String prefix = startingWith;
 		suggestions.removeIf(sug -> !sug.startsWith(prefix));
@@ -120,10 +135,23 @@ public class CommandHandler<C extends CommandContext> {
 		return suggestions;
 	}
 	
+	public Collection<CommandRegistration<C>> getCommands(String label){
+		Collection<CommandRegistration<C>> coll = commands.get(label);
+		if (coll == null) return Collections.emptyList();
+		return Collections.unmodifiableCollection(coll);
+	}
+	
 	public synchronized void register(Object commandHolder) {
 		for (CommandRegistration<C> reg : CommandRegistration.<C>create(commandHolder)) {
 			for (String label : reg.getLabels()) {
-				commands.put(label, reg);
+				Collection<CommandRegistration<C>> col = commands.get(label);
+				
+				if (col == null) {
+					col = new ArrayList<>();
+					commands.put(label, col);
+				}
+				
+				col.add(reg);
 			}
 		}
 	}

@@ -26,7 +26,7 @@ package de.bluecolored.bluecommands.exceptions;
 
 import de.bluecolored.bluecommands.CommandContext;
 
-public class InsufficientContextException extends Exception {
+public class InsufficientContextException extends CommandFormatException {
 	private static final long serialVersionUID = -8501641618994821512L;
 
 	private CommandContext context;

@@ -26,7 +26,7 @@ package de.bluecolored.bluecommands.exceptions;
 
 import de.bluecolored.bluecommands.ArgumentParser;
 
-public class CommandArgumentException extends Exception {
+public class CommandArgumentException extends CommandFormatException {
 	private static final long serialVersionUID = -5265706501885779869L;
 
 	private String reason;
@@ -35,7 +35,7 @@ public class CommandArgumentException extends Exception {
 	private ArgumentParser<?> parser;
 	
 	public CommandArgumentException(String reason, String wrongArgument, Class<?> expectedType, ArgumentParser<?> parser) {
-		super("Failed to parse argument '" + wrongArgument + "' to type " + expectedType.getCanonicalName() + ": " + reason);
+		super("Failed to parse argument '" + wrongArgument + "' to type " + (expectedType != null ? expectedType.getCanonicalName() : null) + ": " + reason);
 		
 		this.reason = reason;
 		this.wrongArgument = wrongArgument;

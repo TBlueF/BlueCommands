@@ -24,6 +24,25 @@
  */
 package de.bluecolored.bluecommands.exceptions;
 
-public class CommandNotFoundException extends CommandFormatException {
-	private static final long serialVersionUID = -510797637550262750L;
+public class CommandFormatException extends Exception {
+	private static final long serialVersionUID = 4318507842176607495L;
+	
+	public CommandFormatException() {}
+	
+	public CommandFormatException(String message) {
+		super(message);
+	}
+
+	public CommandFormatException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
+
+	public CommandFormatException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public CommandFormatException(Throwable cause) {
+		super(cause);
+	}
+	
 }

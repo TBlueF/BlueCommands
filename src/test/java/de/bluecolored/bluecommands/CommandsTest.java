@@ -47,6 +47,7 @@ public class CommandsTest {
 	@Test
 	public void executeValidTest() throws Exception {
 		assertEquals(handler.execute(new TestContext(), "test valid validTestArgument"), 3);
+		assertEquals(handler.execute(new TestContext(), "test valid validTestArgument validSecondArgument"), 4);
 	}
 	
 	@Test(expected = InsufficientPermissionException.class)
@@ -63,6 +64,12 @@ public class CommandsTest {
 	public int validTestCommand(String contextArgument1, int contextArg2, @Argument(type = TestArgumentParser.class) String someTestArgument) {
 		assertEquals(someTestArgument, "validTestArgument");
 		return contextArg2 + 2;
+	}
+	
+	@Command(label = "test valid", permission = "test", description = "A test command that works with the same label")
+	public int validTestCommandSecond(String contextArgument1, int contextArg2, @Argument(type = TestArgumentParser.class) String someTestArgument, @Argument(type = TestArgumentParser.class) String someSecondTestArgument) {
+		assertEquals(someTestArgument, "validTestArgument");
+		return contextArg2 + 3;
 	}
 	
 	@Command(label = "test invalid permission", permission = "invalid", description = "A test command that the context has no permission to execute")
