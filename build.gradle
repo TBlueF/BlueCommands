@@ -1,0 +1,20 @@
+plugins {
+	id 'java'
+}
+
+repositories {
+	jcenter()
+	mavenCentral()
+	maven {
+		url 'https://jitpack.io'
+	}
+}
+
+dependencies {
+   testCompile 'junit:junit:4.12'
+}
+
+apply plugin: 'java'
+
+group = 'de.bluecolored.bluecommand'
+version = '1.0.0'
