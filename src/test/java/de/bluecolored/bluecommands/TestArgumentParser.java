@@ -32,7 +32,7 @@ import de.bluecolored.bluecommands.exceptions.CommandArgumentException;
 public class TestArgumentParser implements ArgumentParser<CommandContext> {
 
 	@Override
-	public <T> ParseResult parse(CommandContext context, Class<T> type, String argumentsString) throws CommandArgumentException {
+	public ParseResult parse(CommandContext context, Class<?> type, String argumentsString) throws CommandArgumentException {
 		if (!type.isAssignableFrom(String.class)) throw new IllegalArgumentException("Unsupported type: " + type.getCanonicalName());
 		
 		if (argumentsString.isEmpty()) throw new CommandArgumentException("Not enough arguments!", argumentsString, type, this);

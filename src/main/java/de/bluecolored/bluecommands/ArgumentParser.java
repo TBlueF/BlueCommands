@@ -40,7 +40,7 @@ public interface ArgumentParser<C extends CommandContext> {
 	 * @throws CommandArgumentException If the argumentsString is in the wrong format and can not be resolved
 	 * @throws IllegalArgumentException If the type is not supported by this ArgumentParser
 	 */
-	<T> ParseResult parse(C context, Class<T> type, String argumentsString) throws CommandArgumentException, IllegalArgumentException;
+	ParseResult parse(C context, Class<?> type, String argumentsString) throws CommandArgumentException, IllegalArgumentException;
 	
 	Collection<String> suggest(C context, Class<?> type, String argumentsString);
 	

@@ -75,7 +75,7 @@ public class CommandHandler<C extends CommandContext> {
 			for (CommandRegistration<C> reg : getCommands(command)) {
 				try {
 					return reg.execute(parserLib, context, arguments);
-				} catch (CommandArgumentException | InsufficientContextException | InsufficientPermissionException e) {
+				} catch (CommandFormatException e) {
 					if (commandException == null) {
 						commandException = e;
 					} else {

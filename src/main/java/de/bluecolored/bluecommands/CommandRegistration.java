@@ -33,6 +33,7 @@ import java.util.Collection;
 
 import de.bluecolored.bluecommands.ArgumentParser.ParseResult;
 import de.bluecolored.bluecommands.exceptions.CommandArgumentException;
+import de.bluecolored.bluecommands.exceptions.CommandFormatException;
 import de.bluecolored.bluecommands.exceptions.InsufficientContextException;
 import de.bluecolored.bluecommands.exceptions.InsufficientPermissionException;
 import de.bluecolored.bluecommands.exceptions.UnknownParserException;
@@ -49,7 +50,7 @@ public class CommandRegistration<C extends CommandContext> {
 		this.command = command;
 	}
 	
-	public Object execute(ArgumentParserLibrary<? super C> parserLib, C context, String argumentsString) throws CommandArgumentException, InvocationTargetException, InsufficientContextException, InsufficientPermissionException {
+	public Object execute(ArgumentParserLibrary<? super C> parserLib, C context, String argumentsString) throws CommandFormatException, InvocationTargetException {
 		if (!context.hasPermission(command.permission())) throw new InsufficientPermissionException(context, command.permission());
 		
 		Parameter[] parameters = method.getParameters();
