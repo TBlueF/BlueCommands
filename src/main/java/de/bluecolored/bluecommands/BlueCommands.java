@@ -2,6 +2,7 @@ package de.bluecolored.bluecommands;
 
 import de.bluecolored.bluecommands.annotations.*;
 import de.bluecolored.bluecommands.parsers.ArgumentParser;
+import de.bluecolored.bluecommands.parsers.BooleanArgumentParser;
 import de.bluecolored.bluecommands.parsers.NumberArgumentParser;
 import de.bluecolored.bluecommands.parsers.StringArgumentParser;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +49,8 @@ public class BlueCommands<C> {
         setArgumentParserForArgumentType(Float.class, NumberArgumentParser.forFloats());
         setArgumentParserForArgumentType(double.class, NumberArgumentParser.forDoubles());
         setArgumentParserForArgumentType(Double.class, NumberArgumentParser.forDoubles());
+        setArgumentParserForArgumentType(boolean.class, new BooleanArgumentParser<>());
+        setArgumentParserForArgumentType(Boolean.class, new BooleanArgumentParser<>());
     }
 
     public Command<C, Object> createCommand(Object holder) {

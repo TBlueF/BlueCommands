@@ -80,7 +80,7 @@ public class NumberArgumentParser<C, T extends Number> extends StringArgumentPar
             try {
                 return numberParser.apply(s);
             } catch (RuntimeException ex) {
-                throw new CommandParseException("'" + s +"' is not a vaild " + type);
+                throw new CommandParseException("'" + s +"' is not a vaild " + type.getSimpleName());
             }
         };
     }

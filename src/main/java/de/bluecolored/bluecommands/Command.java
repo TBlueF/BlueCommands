@@ -32,26 +32,28 @@ public class Command<C, T> {
 
     public ParseResult<C, T> parse(C context, String input) {
         ParseResult<C, T> result = new ParseResult<>();
-        parse(context, new HashMap<>(), new InputReader(input), result);
+        parse(context, new InputReader(input), new ParseStack<>(), result);
         return result;
     }
 
-    public void parse(C context, Map<String, Object> arguments, InputReader input, ParseResult<C, T> result) {
+    void parse(C context, InputReader input, ParseStack<C, T> stack, ParseResult<C, T> result) {
         if (!isValid(context)) return;
 
         int inputPosition = input.getPosition();
         if (executable != null) {
             if (input.peek() == -1)
-                result.getMatches().add(new PreparedCommandExecutable<>(executable, context, arguments));
+                result.getMatches().add(new PreparedCommandExecutable<>(executable, context, stack.getArguments(), stack.getCommandStack()));
             else
-                result.getFailures().add(new ParseResult.ParseFailure(inputPosition, "Too many arguments."));
+                result.getFailures().add(new ParseResult.ParseFailure<>(inputPosition, "Too many arguments.", stack.getCommandStack()));
         }
 
         if (getClass() == Command.class || input.read() == ' ') {
             inputPosition = input.getPosition();
             for (Command<C, T> subCommand : subCommands) {
-                input.setPosition(inputPosition);
-                subCommand.parse(context, new HashMap<>(arguments), input, result);
+                try (var ignored = stack.push(subCommand)) {
+                    input.setPosition(inputPosition);
+                    subCommand.parse(context, input, stack, result);
+                }
             }
         }
     }
