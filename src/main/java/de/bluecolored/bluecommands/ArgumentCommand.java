@@ -6,10 +6,20 @@ public class ArgumentCommand<C, T> extends Command<C, T> {
 
     private final String argumentId;
     private final ArgumentParser<C, ?> argumentParser;
+    private final boolean optional;
 
-    public ArgumentCommand(String argumentId, ArgumentParser<C, ?> argumentParser) {
+    public ArgumentCommand(String argumentId, ArgumentParser<C, ?> argumentParser, boolean optional) {
         this.argumentId = argumentId;
         this.argumentParser = argumentParser;
+        this.optional = optional;
+    }
+
+    public String getArgumentId() {
+        return argumentId;
+    }
+
+    public boolean isOptional() {
+        return optional;
     }
 
     @Override
@@ -37,6 +47,11 @@ public class ArgumentCommand<C, T> extends Command<C, T> {
                 stack.getCommandStack(),
                 argumentParser.suggest(context, stack.getArguments(), input)
             ));
+
+            if (optional) {
+                input.setPosition(Math.max(0, position - 1));
+                super.parse(context, input, stack, result);
+            }
         }
     }
 
@@ -45,7 +60,10 @@ public class ArgumentCommand<C, T> extends Command<C, T> {
         if (getClass() != other.getClass()) return false;
 
         ArgumentCommand<C, T> ac = (ArgumentCommand<C, T>) other;
-        return ac.argumentId.equals(argumentId) && ac.argumentParser.equals(argumentParser);
+        return
+                ac.optional == optional &&
+                ac.argumentId.equals(argumentId) &&
+                ac.argumentParser.equals(argumentParser);
     }
 
 }

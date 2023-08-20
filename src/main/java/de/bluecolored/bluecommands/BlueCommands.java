@@ -105,7 +105,7 @@ public class BlueCommands<C> {
 
         if (!argumentMatcher.matches()) {
             command = new LiteralCommand<>(token);
-            optional = false;
+            //optional = false;
         } else {
             String argumentId = argumentMatcher.group(1);
 
@@ -159,9 +159,10 @@ public class BlueCommands<C> {
                 }
             }
 
-            command = new ArgumentCommand<>(argumentId, argumentParser);
+            command = new ArgumentCommand<>(argumentId, argumentParser, optional);
         }
 
+        /*
         if (optional) {
             Command<C, Object> sub = command;
             sub.addSubCommand(createCommand(holder, method, tokens, nextToken + 1));
@@ -169,6 +170,7 @@ public class BlueCommands<C> {
             command = new Command<>();
             command.addSubCommand(sub);
         }
+        */
 
         command.addSubCommand(createCommand(holder, method, tokens, nextToken + 1));
 

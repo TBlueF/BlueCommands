@@ -47,7 +47,7 @@ public class Command<C, T> {
                 result.getFailures().add(new ParseResult.ParseFailure<>(inputPosition, "Too many arguments.", stack.getCommandStack()));
         }
 
-        if (getClass() == Command.class || input.read() == ' ') {
+        if (getClass() == Command.class || input.getPosition() == 0 || input.read() == ' ') {
             inputPosition = input.getPosition();
             for (Command<C, T> subCommand : subCommands) {
                 try (var ignored = stack.push(subCommand)) {

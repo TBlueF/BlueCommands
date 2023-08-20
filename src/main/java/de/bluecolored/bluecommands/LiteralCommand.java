@@ -13,6 +13,10 @@ public class LiteralCommand<C, T> extends Command<C, T> {
         this.literal = literal;
     }
 
+    public String getLiteral() {
+        return literal;
+    }
+
     @Override
     void parse(C context, InputReader input, ParseStack<C, T> stack, ParseResult<C, T> result) {
         if (!isValid(context)) return;
