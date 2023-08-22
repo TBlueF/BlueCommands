@@ -14,7 +14,7 @@ public class Command<C, T> {
     private transient long lastValidationTime;
 
     public Command() {
-        this.subCommands = new ArrayList<>();
+        this.subCommands = new ArrayList<>(1);
         this.executable = null;
     }
 
@@ -31,28 +31,30 @@ public class Command<C, T> {
     }
 
     public ParseResult<C, T> parse(C context, String input) {
-        ParseResult<C, T> result = new ParseResult<>();
-        parse(context, new InputReader(input), new ParseStack<>(), result);
-        return result;
+        ParseData<C, T> stack = new ParseData<>(context, input);
+        parse(stack);
+        return stack.getResult();
     }
 
-    void parse(C context, InputReader input, ParseStack<C, T> stack, ParseResult<C, T> result) {
-        if (!isValid(context)) return;
+    void parse(ParseData<C, T> data) {
+        if (!isValid(data.getContext())) return;
 
+        InputReader input = data.getInput();
         int inputPosition = input.getPosition();
         if (executable != null) {
             if (input.peek() == -1)
-                result.getMatches().add(new PreparedCommandExecutable<>(executable, context, stack.getArguments(), stack.getCommandStack()));
+                data.getResult().addMatch(new ParseMatch<>(executable, data.getContext(), data.getArguments(), data.getCommandStack()));
             else
-                result.getFailures().add(new ParseResult.ParseFailure<>(inputPosition, "Too many arguments.", stack.getCommandStack()));
+                data.getResult().addFailure(new ParseFailure<>(inputPosition, "Too many arguments.", data.getCommandStack()));
         }
 
-        if (getClass() == Command.class || input.getPosition() == 0 || input.read() == ' ') {
-            inputPosition = input.getPosition();
+        if (getClass() == Command.class || inputPosition == 0 || input.read() == ' ') {
             for (Command<C, T> subCommand : subCommands) {
-                try (var ignored = stack.push(subCommand)) {
-                    input.setPosition(inputPosition);
-                    subCommand.parse(context, input, stack, result);
+                try {
+                    data.pushSegment(subCommand);
+                    subCommand.parse(data);
+                } finally {
+                    data.popSegment();
                 }
             }
         }

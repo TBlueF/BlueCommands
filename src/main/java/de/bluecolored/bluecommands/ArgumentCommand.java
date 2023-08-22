@@ -23,34 +23,41 @@ public class ArgumentCommand<C, T> extends Command<C, T> {
     }
 
     @Override
-    void parse(C context, InputReader input, ParseStack<C, T> stack, ParseResult<C, T> result) {
+    void parse(ParseData<C, T> data) {
+        C context = data.getContext();
         if (!isValid(context)) return;
 
+        InputReader input = data.getInput();
         int position = input.getPosition();
 
         try {
             Object argument = argumentParser.parse(context, input);
 
+            // sanity check position
+            if (input.getPosition() < position) {
+                throw new CommandParseException("The ArgumentParser '" + argumentParser + "' altered the InputReader in an illegal way. (position changed backwards)");
+            }
+
             // check if full token was consumed
             int next = input.peek();
             if (next != -1 && next != ' ') {
-                throw new CommandParseException("ArgumentParser did not consume the full token.");
+                throw new CommandParseException("The ArgumentParser '" + argumentParser + "' did not consume the full token. (expected next char to be a space or end of string)");
             }
 
-            stack.getArguments().put(argumentId, argument);
-            super.parse(context, input, stack, result);
+            data.getCurrentSegment().setValue(argument);
+            super.parse(data);
         } catch (CommandParseException ex) {
-            input.setPosition(position);
-            result.getFailures().add(new ParseResult.ParseFailure<>(
+            input.setPosition(position); // reset position for suggestions
+            data.getResult().addFailure(new ParseFailure<>(
                 position,
                 ex.getMessage(),
-                stack.getCommandStack(),
-                argumentParser.suggest(context, stack.getArguments(), input)
+                data.getCommandStack(),
+                argumentParser.suggest(context, data.getArguments(), input)
             ));
 
             if (optional) {
                 input.setPosition(Math.max(0, position - 1));
-                super.parse(context, input, stack, result);
+                super.parse(data);
             }
         }
     }

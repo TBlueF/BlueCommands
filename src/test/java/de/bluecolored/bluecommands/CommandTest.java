@@ -16,10 +16,10 @@ public class CommandTest {
         blueCommands.setArgumentParserForId("word", StringArgumentParser.word());
         var command = blueCommands.createCommand(this);
 
-        ParseResult<Object, Object> result = command.parse(null, "test Blue abcd 1233");
+        ParseResult<Object, Object> result = command.parse(null, "test Blue abcd -1233");
 
-        PreparedCommandExecutable<Object, Object> executable = result.getMatches().stream()
-                .max(Comparator.comparing(PreparedCommandExecutable::getPriority))
+        ParseMatch<Object, Object> executable = result.getMatches().stream()
+                .max(Comparator.comparing(ParseMatch::getPriority))
                 .orElseThrow(IllegalStateException::new);
 
         Object executionResult = executable.execute();

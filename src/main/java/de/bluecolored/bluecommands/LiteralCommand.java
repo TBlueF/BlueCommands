@@ -18,22 +18,23 @@ public class LiteralCommand<C, T> extends Command<C, T> {
     }
 
     @Override
-    void parse(C context, InputReader input, ParseStack<C, T> stack, ParseResult<C, T> result) {
+    void parse(ParseData<C, T> data) {
+        C context = data.getContext();
         if (!isValid(context)) return;
 
-        int position = input.getPosition();
+        InputReader input = data.getInput();
         MatchResult match = input.read(PATTERN);
         if (match == null || !match.group().equals(literal)) {
-            result.getFailures().add(new ParseResult.ParseFailure<>(
-                    position,
+            data.getResult().addFailure(new ParseFailure<>(
+                    data.getCurrentSegment().getPosition(),
                     match == null ?
                             String.format("Expected '%s', but got something else.", literal) :
                             String.format("Expected '%s', but got '%s'.", literal, match.group()),
-                    stack.getCommandStack(),
+                    data.getCommandStack(),
                     Collections.singletonList(new SimpleSuggestion(literal))
             ));
         } else {
-            super.parse(context, input, stack, result);
+            super.parse(data);
         }
     }
 

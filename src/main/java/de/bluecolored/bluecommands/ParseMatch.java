@@ -1,16 +1,16 @@
 package de.bluecolored.bluecommands;
 
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
-public class PreparedCommandExecutable<C, T> {
+public class ParseMatch<C, T> {
 
     private final CommandExecutable<C, T> executable;
     private final C context;
     private final Map<String, Object> arguments;
-    private final LinkedList<Command<C, T>> commandStack;
+    private final List<ParseSegment<C, T>> commandStack;
 
-    public PreparedCommandExecutable(CommandExecutable<C, T> executable, C context, Map<String, Object> arguments, LinkedList<Command<C, T>> commandStack) {
+    public ParseMatch(CommandExecutable<C, T> executable, C context, Map<String, Object> arguments, List<ParseSegment<C, T>> commandStack) {
         this.executable = executable;
         this.context = context;
         this.arguments = arguments;
@@ -37,7 +37,7 @@ public class PreparedCommandExecutable<C, T> {
         return executable.getPriority();
     }
 
-    public LinkedList<Command<C, T>> getCommandStack() {
+    public List<ParseSegment<C, T>> getCommandStack() {
         return commandStack;
     }
 
