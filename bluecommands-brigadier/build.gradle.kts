@@ -52,11 +52,15 @@ java {
 repositories {
     mavenCentral()
     maven {
+        setUrl("https://libraries.minecraft.net")
+    }
+    maven {
         setUrl("https://jitpack.io")
     }
 }
 
 dependencies {
+    implementation ( project(":bluecommands-core") )
     implementation ("com.mojang:brigadier:1.0.17")
 
     compileOnly ("org.jetbrains:annotations:24.0.1")

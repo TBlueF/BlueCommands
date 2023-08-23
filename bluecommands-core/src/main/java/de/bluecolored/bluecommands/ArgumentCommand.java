@@ -18,6 +18,10 @@ public class ArgumentCommand<C, T> extends Command<C, T> {
         return argumentId;
     }
 
+    public ArgumentParser<C, ?> getArgumentParser() {
+        return argumentParser;
+    }
+
     public boolean isOptional() {
         return optional;
     }

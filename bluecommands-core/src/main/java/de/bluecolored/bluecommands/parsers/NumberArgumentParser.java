@@ -35,6 +35,18 @@ public class NumberArgumentParser<C, T extends Number> extends StringArgumentPar
         return result;
     }
 
+    public Class<T> getType() {
+        return type;
+    }
+
+    public double getMin() {
+        return min;
+    }
+
+    public double getMax() {
+        return max;
+    }
+
     public NumberArgumentParser<C, T> withBounds(double min, double max) {
         return new NumberArgumentParser<>(type, numberParser, min, max);
     }

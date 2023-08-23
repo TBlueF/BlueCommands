@@ -140,7 +140,7 @@ public class BlueCommands<C> {
             ));
 
             // add pattern to string arguments
-            if (argumentParser instanceof StringArgumentParser) {
+            if (argumentParser.getClass() == StringArgumentParser.class) {
                 Pattern pattern = parameter.getAnnotation(Pattern.class);
                 if (pattern != null) {
                     //noinspection unchecked
@@ -150,7 +150,7 @@ public class BlueCommands<C> {
             }
 
             // add range to number arguments
-            if (argumentParser instanceof NumberArgumentParser) {
+            if (argumentParser.getClass() == NumberArgumentParser.class) {
                 Range range = parameter.getAnnotation(Range.class);
                 if (range != null) {
                     //noinspection unchecked

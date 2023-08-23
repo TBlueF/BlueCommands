@@ -60,6 +60,18 @@ public class StringArgumentParser<C, T> implements ArgumentParser<C, T> {
         return Collections.emptyList();
     }
 
+    public boolean isAllowQuoted() {
+        return allowQuoted;
+    }
+
+    public boolean isGreedy() {
+        return greedy;
+    }
+
+    public Pattern getPattern() {
+        return pattern;
+    }
+
     public StringArgumentParser<C, T> withPattern(@Language("RegExp") String pattern) {
         return new StringArgumentParser<>(stringParser, allowQuoted, greedy, pattern);
     }
