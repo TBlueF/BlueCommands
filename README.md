@@ -91,3 +91,52 @@ commandFactory.setArgumentParserForArgumentType(Player.class, new PlayerArgument
 
 this.commands = commandFactory.createCommand(this);
 ```
+
+### Context-Resolver
+With context-resolvers you can add other parameters to your command-method that should be resolved from the context.
+```java
+BlueCommands<CommandSender> commandFactory = new BlueCommands<>();
+commandFactory.setContextResolverForType(Server.class, CommandSender::getServer);
+```
+Then in a command you can add a `Server` parameter which will be filled based on the current command-context:
+```java
+@Command("foo <arg1> [optionalArg2]")
+public void fooCommand(
+      Server server,
+      @Argument("arg1") String stringArgument,
+      @Argument("optionalArg2") Double optionalDoubleArgument
+) {
+    // ...
+}
+```
+
+### Context-Predicates (e.g. Permissions)
+Here an example to create a Permission annotation and use it to validate commands for a context.
+
+Create the new Annotation:
+```java 
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Permission {
+    String value();
+}
+```
+Label your commands with this new annotation:
+```java
+@Command("foo <arg1> [optionalArg2]")
+@Permission("foo.bar.bazz")
+public void fooCommand(
+      CommandSender sender,
+      @Argument("arg1") String stringArgument,
+      @Argument("optionalArg2") Double optionalDoubleArgument
+) {
+    // ...
+}
+```
+Register a context-predicate for this Annotation:
+```java
+BlueCommands<CommandSender> commandFactory = new BlueCommands<>();
+commandFactory.setAnnotationContextPredicate(Permission.class, (permission, commandSender) -> {
+    return commandSender.hasPermission(permission.value());
+});
+```
