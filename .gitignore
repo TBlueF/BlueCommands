@@ -18,6 +18,10 @@ doc/
 doc/*
 */doc/*
 
+run/
+run/*
+*/run/*
+
 .classpath
 */.classpath
 
