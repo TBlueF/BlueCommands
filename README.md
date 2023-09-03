@@ -140,3 +140,14 @@ commandFactory.setAnnotationContextPredicate(Permission.class, (permission, comm
     return commandSender.hasPermission(permission.value());
 });
 ```
+When the annotation is present, the command will now only be available if the registered predicate returns `true`.
+
+### Merging commands
+You can merge multiple commands into one. E.g. if you have multiple objects that hold command-methods:
+```java
+BlueCommands<CommandSender> commandFactory = new BlueCommands<>();
+Command<CommandSender, Object> root = new Command<>();
+root.tryMerge(commandFactory.createCommand(object1));
+root.tryMerge(commandFactory.createCommand(object2));
+root.tryMerge(commandFactory.createCommand(object3));
+```
