@@ -1,3 +1,27 @@
+/*
+ * This file is part of BlueCommands, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) Blue (Lukas Rieger) <https://bluecolored.de>
+ * Copyright (c) contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package de.bluecolored.bluecommands;
 
 import de.bluecolored.bluecommands.parsers.ArgumentParser;
@@ -34,18 +58,20 @@ public class ArgumentCommand<C, T> extends Command<C, T> {
         InputReader input = data.getInput();
         int position = input.getPosition();
 
+        int matchCount = data.getResult().getMatches().size();
+
         try {
             Object argument = argumentParser.parse(context, input);
 
             // sanity check position
             if (input.getPosition() < position) {
-                throw new CommandParseException("The ArgumentParser '" + argumentParser + "' altered the InputReader in an illegal way. (position changed backwards)");
+                throw new CommandSetupException("The ArgumentParser '" + argumentParser + "' altered the InputReader in an illegal way. (position changed backwards)");
             }
 
             // check if full token was consumed
             int next = input.peek();
             if (next != -1 && next != ' ') {
-                throw new CommandParseException("The ArgumentParser '" + argumentParser + "' did not consume the full token. (expected next char to be a space or end of string)");
+                throw new CommandSetupException("The ArgumentParser '" + argumentParser + "' did not consume the full token. (expected next char to be a space or end of string)");
             }
 
             data.getCurrentSegment().setValue(argument);
@@ -56,13 +82,15 @@ public class ArgumentCommand<C, T> extends Command<C, T> {
                 position,
                 ex.getMessage(),
                 data.getCommandStack(),
-                argumentParser.suggest(context, data.getArguments(), input)
+                argumentParser.suggest(context, input)
             ));
+        }
 
-            if (optional) {
-                input.setPosition(Math.max(0, position - 1));
-                super.parse(data);
-            }
+        // skip argument if the argument is optional and no match has been added
+        if (optional && matchCount == data.getResult().getMatches().size()) {
+            data.getCurrentSegment().setValue(null);
+            input.setPosition(Math.max(0, position - 1));
+            super.parse(data);
         }
     }
 

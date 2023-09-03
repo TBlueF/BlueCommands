@@ -26,35 +26,46 @@ package de.bluecolored.bluecommands.parsers;
 
 import de.bluecolored.bluecommands.CommandParseException;
 import de.bluecolored.bluecommands.InputReader;
-import de.bluecolored.bluecommands.SimpleSuggestion;
 import de.bluecolored.bluecommands.Suggestion;
+import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 
-public class BooleanArgumentParser<C> extends SimpleArgumentParser<C, Boolean> {
+public abstract class SimpleArgumentParser<C, T> implements ArgumentParser<C, T> {
 
-    private static final List<Suggestion> SUGGESTIONS = List.of(
-            new SimpleSuggestion("true"),
-            new SimpleSuggestion("false")
-    );
+    private static final Pattern QUOTED_STRING_PATTERN = Pattern.compile("\"(.*?)\"");
+    private static final Pattern STRING_PATTERN = Pattern.compile("(\\S*)");
 
-    private BooleanArgumentParser() {
-        super(false, false);
-    }
+    private final boolean allowQuoted;
+    private final boolean greedy;
 
-    public Boolean parse(C context, String string) throws CommandParseException {
-        if (string.equals("true")) return Boolean.TRUE;
-        if (string.equals("false")) return Boolean.FALSE;
-        throw new CommandParseException("'" + string + "' is not a valid boolean");
+    public SimpleArgumentParser(boolean allowQuoted, boolean greedy) {
+        this.allowQuoted = allowQuoted;
+        this.greedy = greedy;
     }
 
     @Override
-    public List<Suggestion> suggest(C context, InputReader input) {
-        return SUGGESTIONS;
+    public final T parse(C context, InputReader input) throws CommandParseException {
+        MatchResult result = null;
+        if (allowQuoted) result = input.read(QUOTED_STRING_PATTERN);
+        if (result == null && greedy) return parse(context, input.readRemaining());
+        if (result == null) result = input.read(STRING_PATTERN);
+        if (result == null) return parse(context, "");
+        return parse(context, result.group(1));
     }
 
-    public static <C> BooleanArgumentParser<C> create() {
-        return new BooleanArgumentParser<>();
+    public abstract T parse(C context, String string) throws CommandParseException;
+
+    public boolean isAllowQuoted() {
+        return allowQuoted;
+    }
+
+    public boolean isGreedy() {
+        return greedy;
     }
 
 }

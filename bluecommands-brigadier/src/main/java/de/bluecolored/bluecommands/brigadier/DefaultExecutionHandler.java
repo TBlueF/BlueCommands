@@ -22,39 +22,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.bluecolored.bluecommands.parsers;
+package de.bluecolored.bluecommands.brigadier;
 
-import de.bluecolored.bluecommands.CommandParseException;
-import de.bluecolored.bluecommands.InputReader;
-import de.bluecolored.bluecommands.SimpleSuggestion;
-import de.bluecolored.bluecommands.Suggestion;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import de.bluecolored.bluecommands.ParseFailure;
+import de.bluecolored.bluecommands.ParseResult;
 
-import java.util.List;
+import java.util.Comparator;
 
-public class BooleanArgumentParser<C> extends SimpleArgumentParser<C, Boolean> {
+public class DefaultExecutionHandler<C, T> implements CommandExecutionHandler<C, T> {
 
-    private static final List<Suggestion> SUGGESTIONS = List.of(
-            new SimpleSuggestion("true"),
-            new SimpleSuggestion("false")
-    );
+    @Override
+    public int handleExecution(T result) {
+        if (result instanceof Number)
+            return ((Number) result).intValue();
 
-    private BooleanArgumentParser() {
-        super(false, false);
-    }
-
-    public Boolean parse(C context, String string) throws CommandParseException {
-        if (string.equals("true")) return Boolean.TRUE;
-        if (string.equals("false")) return Boolean.FALSE;
-        throw new CommandParseException("'" + string + "' is not a valid boolean");
+        return 1;
     }
 
     @Override
-    public List<Suggestion> suggest(C context, InputReader input) {
-        return SUGGESTIONS;
-    }
-
-    public static <C> BooleanArgumentParser<C> create() {
-        return new BooleanArgumentParser<>();
+    public int handleParseFailure(ParseResult<C, T> result) throws CommandSyntaxException {
+        ParseFailure<C, ?> failure = result.getFailures().stream()
+                .max(Comparator.comparing(ParseFailure::getPosition))
+                .orElseThrow(IllegalAccessError::new);
+        throw new CommandSyntaxException(
+                new SimpleCommandExceptionType(failure::getReason),
+                failure::getReason,
+                result.getInput(),
+                failure.getPosition()
+        );
     }
 
 }

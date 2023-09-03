@@ -22,39 +22,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package de.bluecolored.bluecommands.parsers;
+package de.bluecolored.bluecommands.brigadier;
 
-import de.bluecolored.bluecommands.CommandParseException;
-import de.bluecolored.bluecommands.InputReader;
-import de.bluecolored.bluecommands.SimpleSuggestion;
-import de.bluecolored.bluecommands.Suggestion;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import de.bluecolored.bluecommands.ParseResult;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+public interface CommandExecutionHandler<C, T> {
 
-public class BooleanArgumentParser<C> extends SimpleArgumentParser<C, Boolean> {
+    int handleExecution(@Nullable T result) throws CommandSyntaxException;
 
-    private static final List<Suggestion> SUGGESTIONS = List.of(
-            new SimpleSuggestion("true"),
-            new SimpleSuggestion("false")
-    );
-
-    private BooleanArgumentParser() {
-        super(false, false);
-    }
-
-    public Boolean parse(C context, String string) throws CommandParseException {
-        if (string.equals("true")) return Boolean.TRUE;
-        if (string.equals("false")) return Boolean.FALSE;
-        throw new CommandParseException("'" + string + "' is not a valid boolean");
-    }
-
-    @Override
-    public List<Suggestion> suggest(C context, InputReader input) {
-        return SUGGESTIONS;
-    }
-
-    public static <C> BooleanArgumentParser<C> create() {
-        return new BooleanArgumentParser<>();
-    }
+    int handleParseFailure(ParseResult<C, T> parseResult) throws CommandSyntaxException;
 
 }

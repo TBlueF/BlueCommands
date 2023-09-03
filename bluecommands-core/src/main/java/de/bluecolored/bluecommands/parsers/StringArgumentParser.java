@@ -8,91 +8,48 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-public class StringArgumentParser<C, T> implements ArgumentParser<C, T> {
+public class StringArgumentParser<C> extends SimpleArgumentParser<C, String> {
 
-    private static final Pattern QUOTED_STRING_PATTERN = Pattern.compile("\"(.*?)\"");
-    private static final Pattern STRING_PATTERN = Pattern.compile("(\\S+)");
-
-    private final StringParser<T> stringParser;
-    private final boolean allowQuoted;
-    private final boolean greedy;
     private final @Nullable Pattern pattern;
 
-    public StringArgumentParser(StringParser<T> stringParser, boolean allowQuoted, boolean greedy) {
-        this.stringParser = stringParser;
-        this.allowQuoted = allowQuoted;
-        this.greedy = greedy;
-        this.pattern = null;
+    private StringArgumentParser(boolean allowQuoted, boolean greedy) {
+        this(allowQuoted, greedy, null);
     }
 
-    public StringArgumentParser(StringParser<T> stringParser, boolean allowQuoted, boolean greedy, @Language("RegExp") String pattern) {
-        this.stringParser = stringParser;
-        this.allowQuoted = allowQuoted;
-        this.greedy = greedy;
-        this.pattern = Pattern.compile(pattern);
+    private StringArgumentParser(boolean allowQuoted, boolean greedy, @Language("RegExp") String pattern) {
+        super(allowQuoted, greedy);
+        this.pattern = pattern != null ? Pattern.compile(pattern) : null;
     }
 
     @Override
-    public T parse(C context, InputReader input) throws CommandParseException {
-        String string = parseString(input);
-
+    public String parse(C context, String string) throws CommandParseException {
         if (pattern != null && !pattern.matcher(string).matches())
             throw new CommandParseException("'" + string + "' does not match the required pattern!");
 
-        return stringParser.parse(string);
-    }
-
-    private String parseString(InputReader input) throws CommandParseException {
-        MatchResult result = null;
-        if (allowQuoted) result = input.read(QUOTED_STRING_PATTERN);
-        if (greedy && result == null) return input.readRemaining();
-        if (result == null) result = input.read(STRING_PATTERN);
-        if (result == null) throw new CommandParseException("Could not find any String.");
-        return result.group(1);
+        return string;
     }
 
     @Override
-    public List<Suggestion> suggest(C context, Map<String, Object> arguments, InputReader input) {
+    public List<Suggestion> suggest(C context, InputReader input) {
         return Collections.emptyList();
     }
 
-    public boolean isAllowQuoted() {
-        return allowQuoted;
+    public StringArgumentParser<C> withPattern(@Language("RegExp") String pattern) {
+        return new StringArgumentParser<>(isAllowQuoted(), isGreedy(), pattern);
     }
 
-    public boolean isGreedy() {
-        return greedy;
+    public static <C> SimpleArgumentParser<C, String> string() {
+        return new StringArgumentParser<>(true, false);
     }
 
-    public Pattern getPattern() {
-        return pattern;
+    public static <C> SimpleArgumentParser<C, String> word() {
+        return new StringArgumentParser<>(false, false);
     }
 
-    public StringArgumentParser<C, T> withPattern(@Language("RegExp") String pattern) {
-        return new StringArgumentParser<>(stringParser, allowQuoted, greedy, pattern);
-    }
-
-    @FunctionalInterface
-    public interface StringParser<T> {
-
-        T parse(String input) throws CommandParseException;
-
-    }
-
-    public static <C> StringArgumentParser<C, String> string() {
-        return new StringArgumentParser<>(s -> s, true, false);
-    }
-
-    public static <C> StringArgumentParser<C, String> word() {
-        return new StringArgumentParser<>(s -> s, false, false);
-    }
-
-    public static <C> StringArgumentParser<C, String> greedyString() {
-        return new StringArgumentParser<>(s -> s, false, true);
+    public static <C> SimpleArgumentParser<C, String> greedyString() {
+        return new StringArgumentParser<>(false, true);
     }
 
 }
