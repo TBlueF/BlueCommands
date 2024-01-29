@@ -81,7 +81,7 @@ public class Command<C, T> {
                     data.popSegment();
                 }
             }
-        } else {
+        } else if (!subCommands.isEmpty()) {
             data.getResult().addFailure(new ParseFailure<>(inputPosition, "Not enough arguments!", data.getCommandStack()));
         }
     }

@@ -26,6 +26,9 @@ package de.bluecolored.bluecommands;
 
 import de.bluecolored.bluecommands.parsers.ArgumentParser;
 
+import java.util.Collection;
+import java.util.List;
+
 public class ArgumentCommand<C, T> extends Command<C, T> {
 
     private final String argumentId;
@@ -72,6 +75,21 @@ public class ArgumentCommand<C, T> extends Command<C, T> {
             int next = input.peek();
             if (next != -1 && next != ' ') {
                 throw new CommandSetupException("The ArgumentParser '" + argumentParser + "' did not consume the full token. (expected next char to be a space or end of string)");
+            }
+
+            // if we reached the end of input, check if there is any additional suggestions and add an extra failure if there are any
+            if (next == -1) {
+                input.setPosition(position); // reset position for suggestions
+                List<Suggestion> extraSuggesions = argumentParser.suggest(context, input);
+                if (!extraSuggesions.isEmpty()) {
+                    data.getResult().addFailure(new ParseFailure<>(
+                            position,
+                            "Alternative Usages",
+                            data.getCommandStack(),
+                            extraSuggesions
+                    ));
+                }
+                input.readRemaining(); // reset position
             }
 
             data.getCurrentSegment().setValue(argument);
