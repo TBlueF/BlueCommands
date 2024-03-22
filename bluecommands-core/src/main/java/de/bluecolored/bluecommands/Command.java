@@ -86,7 +86,7 @@ public class Command<C, T> {
                 }
             }
         } else if (!subCommands.isEmpty()) {
-            if (isTreeOptional()) {
+            if (isSubTreeOptional()) {
                 gatherAllExecutables(data.getContext(), executable -> {
                     data.getResult().addMatch(new ParseMatch<>(executable, data.getContext(), data.getArguments(), data.getCommandStack()));
                 });
@@ -106,6 +106,12 @@ public class Command<C, T> {
 
         for (Command<C, T> subCommand : subCommands)
             subCommand.gatherAllExecutables(context, consumer);
+    }
+
+    private boolean isSubTreeOptional() {
+        for (Command<C, T> subCommand : subCommands)
+            if (!subCommand.isTreeOptional()) return false;
+        return true;
     }
 
     private boolean isTreeOptional() {
