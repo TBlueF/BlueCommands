@@ -49,6 +49,7 @@ public class ArgumentCommand<C, T> extends Command<C, T> {
         return argumentParser;
     }
 
+    @Override
     public boolean isOptional() {
         return optional;
     }

@@ -27,6 +27,7 @@ package de.bluecolored.bluecommands;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class Command<C, T> {
 
@@ -36,6 +37,9 @@ public class Command<C, T> {
     private transient C lastValidationContext;
     private transient boolean lastValidationResult;
     private transient long lastValidationTime;
+
+    private transient boolean lastTreeOptionalResult;
+    private transient long lastTreeOptionalTime;
 
     public Command() {
         this.subCommands = new ArrayList<>(1);
@@ -82,8 +86,42 @@ public class Command<C, T> {
                 }
             }
         } else if (!subCommands.isEmpty()) {
-            data.getResult().addFailure(new ParseFailure<>(inputPosition, "Not enough arguments!", data.getCommandStack()));
+            if (isTreeOptional()) {
+                gatherAllExecutables(data.getContext(), executable -> {
+                    data.getResult().addMatch(new ParseMatch<>(executable, data.getContext(), data.getArguments(), data.getCommandStack()));
+                });
+            } else {
+                data.getResult().addFailure(new ParseFailure<>(inputPosition, "Not enough arguments!", data.getCommandStack()));
+            }
         }
+    }
+
+    public boolean isOptional() {
+        return false;
+    }
+
+    private void gatherAllExecutables(C context, Consumer<CommandExecutable<C, T>> consumer) {
+        if (this.executable != null && this.isValid(context))
+            consumer.accept(executable);
+
+        for (Command<C, T> subCommand : subCommands)
+            subCommand.gatherAllExecutables(context, consumer);
+    }
+
+    private boolean isTreeOptional() {
+        long now = System.currentTimeMillis();
+        if (lastTreeOptionalTime < now - 1000) {
+            lastTreeOptionalResult = checkTreeOptional();
+            lastTreeOptionalTime = now;
+        }
+        return lastTreeOptionalResult;
+    }
+
+    private boolean checkTreeOptional() {
+        if (!isOptional()) return false;
+        for (Command<C, T> subCommand : subCommands)
+            if (!subCommand.isTreeOptional()) return false;
+        return true;
     }
 
     public synchronized boolean isValid(C context) {
