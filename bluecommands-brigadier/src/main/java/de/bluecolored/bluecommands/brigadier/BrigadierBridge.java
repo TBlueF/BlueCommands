@@ -84,8 +84,7 @@ public final class BrigadierBridge {
 
             LiteralArgumentBuilder<D> builder = LiteralArgumentBuilder.literal(((LiteralCommand<C, T>) node).getLiteral());
             builder.requires(d -> node.isValid(contextConverter.apply(d)));
-            if (node.getExecutable() != null)
-                builder.executes(executor);
+            builder.executes(executor);
 
             for (Command<C, ?> subCommand : node.getSubCommands()) {
                 createCommandNodes(List.of(subCommand), suggestionProvider, executor, contextConverter).forEach(builder::then);
@@ -122,8 +121,7 @@ public final class BrigadierBridge {
                 C context = contextConverter.apply(d);
                 return argumentNodes.stream().anyMatch(arg -> arg.isValid(context));
             });
-            if (argumentNodes.stream().anyMatch(arg -> arg.getExecutable() != null))
-                builder.executes(executor);
+            builder.executes(executor);
 
             if (commonNodeType != CommonNodeType.GREEDY) {
                 Collection<Command<C, T>> subCommands = argumentNodes.stream()
