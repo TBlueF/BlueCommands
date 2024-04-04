@@ -108,6 +108,20 @@ tasks.javadoc {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "bluecolored"
+
+            val releasesRepoUrl = "https://repo.bluecolored.de/releases"
+            val snapshotsRepoUrl = "https://repo.bluecolored.de/snapshots"
+            url = uri(if (version == lastVersion) releasesRepoUrl else snapshotsRepoUrl)
+
+            credentials {
+                username = project.findProperty("bluecoloredUsername") as String? ?: System.getenv("BLUECOLORED_USERNAME")
+                password = project.findProperty("bluecoloredPassword") as String? ?: System.getenv("BLUECOLORED_PASSWORD")
+            }
+        }
+    }
     publications {
         create<MavenPublication>("maven") {
             groupId = project.group.toString()

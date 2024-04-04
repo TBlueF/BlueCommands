@@ -60,7 +60,7 @@ repositories {
 }
 
 dependencies {
-    implementation ( project(":bluecommands-core") )
+    api ( project(":bluecommands-core") )
     implementation ("com.mojang:brigadier:1.0.17")
 
     compileOnly ("org.jetbrains:annotations:24.0.1")
@@ -114,6 +114,20 @@ tasks.javadoc {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "bluecolored"
+
+            val releasesRepoUrl = "https://repo.bluecolored.de/releases"
+            val snapshotsRepoUrl = "https://repo.bluecolored.de/snapshots"
+            url = uri(if (version == lastVersion) releasesRepoUrl else snapshotsRepoUrl)
+
+            credentials {
+                username = project.findProperty("bluecoloredUsername") as String? ?: System.getenv("BLUECOLORED_USERNAME")
+                password = project.findProperty("bluecoloredPassword") as String? ?: System.getenv("BLUECOLORED_PASSWORD")
+            }
+        }
+    }
     publications {
         create<MavenPublication>("maven") {
             groupId = project.group.toString()
@@ -121,6 +135,12 @@ publishing {
             version = project.version.toString()
 
             from(components["java"])
+
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+            }
         }
     }
 }
