@@ -3,12 +3,12 @@
 ### Adding to project
 ```kotlin
 repositories {
-    maven ( "https://jitpack.io" )
+    maven ( "https://repo.bluecolored.de/releases" )
 }
 
 dependencies {
-    implementation("com.github.TBlueF.BlueCommands:bluecommands-core:v1.0.0")
-    implementation("com.github.TBlueF.BlueCommands:bluecommands-brigadier:v1.0.0") // Optional
+    implementation("de.bluecolored.bluecommands:bluecommands-core:1.1.3")
+    implementation("de.bluecolored.bluecommands:bluecommands-brigadier:1.1.3") // Optional
 }
 ```
 
