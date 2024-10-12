@@ -34,7 +34,7 @@ import java.util.Comparator;
 public class DefaultExecutionHandler<C, T> implements CommandExecutionHandler<C, T> {
 
     @Override
-    public int handleExecution(T result) {
+    public int handleExecution(C context, T result) {
         if (result instanceof Number)
             return ((Number) result).intValue();
 

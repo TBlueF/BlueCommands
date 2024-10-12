@@ -35,6 +35,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ParserType {
 
-    Class<? extends ArgumentParser<?, ?>> value();
+    @SuppressWarnings("rawtypes")
+    Class<? extends ArgumentParser> value();
 
 }

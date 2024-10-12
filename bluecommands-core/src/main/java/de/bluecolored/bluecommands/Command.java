@@ -58,6 +58,10 @@ public class Command<C, T> {
         return subCommands;
     }
 
+    public ParseResult<C, T> parse(C context, String input) {
+        return parse(context, new InputReader(input));
+    }
+
     public ParseResult<C, T> parse(C context, InputReader input) {
         ParseData<C, T> stack = new ParseData<>(context, input);
         parse(stack);
@@ -114,6 +118,7 @@ public class Command<C, T> {
         return true;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean isTreeOptional() {
         long now = System.currentTimeMillis();
         if (lastTreeOptionalTime < now - 1000) {

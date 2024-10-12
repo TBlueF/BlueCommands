@@ -26,7 +26,6 @@ package de.bluecolored.bluecommands;
 
 import de.bluecolored.bluecommands.parsers.ArgumentParser;
 
-import java.util.Collection;
 import java.util.List;
 
 public class ArgumentCommand<C, T> extends Command<C, T> {

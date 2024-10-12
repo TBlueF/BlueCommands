@@ -30,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface CommandExecutionHandler<C, T> {
 
-    int handleExecution(@Nullable T result) throws CommandSyntaxException;
+    int handleExecution(C context, @Nullable T result) throws CommandSyntaxException;
 
     int handleParseFailure(ParseResult<C, T> parseResult) throws CommandSyntaxException;
 
