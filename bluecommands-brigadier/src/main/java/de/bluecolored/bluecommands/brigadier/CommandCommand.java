@@ -59,7 +59,14 @@ class CommandCommand<C, D, T> implements com.mojang.brigadier.Command<D> {
                 .max(Comparator.comparing(ParseMatch::getPriority))
                 .orElseThrow(IllegalStateException::new);
 
-        return executionHandler.handleExecution(executable.getContext(), executable.execute());
+        T executionResult;
+        try {
+            executionResult = executable.execute();
+        } catch (Exception exception) {
+            return executionHandler.handleExecutionException(executable.getContext(), exception);
+        }
+
+        return executionHandler.handleExecution(executable.getContext(), executionResult);
     }
 
 }
