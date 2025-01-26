@@ -73,7 +73,7 @@ public class Command<C, T> {
 
         InputReader input = data.getInput();
         int inputPosition = input.getPosition();
-        if (executable != null) {
+        if (executable != null && executable.isValid(data.getContext())) {
             if (input.peek() == -1)
                 data.getResult().addMatch(new ParseMatch<>(executable, data.getContext(), data.getArguments(), data.getCommandStack()));
             else

@@ -7,8 +7,8 @@ repositories {
 }
 
 dependencies {
-    implementation("de.bluecolored.bluecommands:bluecommands-core:1.1.3")
-    implementation("de.bluecolored.bluecommands:bluecommands-brigadier:1.1.3") // Optional
+    implementation("de.bluecolored:bluecommands-core:1.1.4")
+    implementation("de.bluecolored:bluecommands-brigadier:1.1.4") // Optional
 }
 ```
 
