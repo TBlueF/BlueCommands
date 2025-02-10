@@ -50,23 +50,8 @@ class CommandCommand<C, D, T> implements com.mojang.brigadier.Command<D> {
     public int run(CommandContext<D> context) throws CommandSyntaxException {
         InputReader inputReader = new InputReader(context.getInput());
         inputReader.setPosition(context.getRange().getStart());
-
         ParseResult<C, T> result = command.parse(contextConverter.apply(context.getSource()), inputReader);
-        if (result.getMatches().isEmpty())
-            return executionHandler.handleParseFailure(result);
-
-        ParseMatch<C, T> executable = result.getMatches().stream()
-                .max(Comparator.comparing(ParseMatch::getPriority))
-                .orElseThrow(IllegalStateException::new);
-
-        T executionResult;
-        try {
-            executionResult = executable.execute();
-        } catch (Exception exception) {
-            return executionHandler.handleExecutionException(executable.getContext(), exception);
-        }
-
-        return executionHandler.handleExecution(executable.getContext(), executionResult);
+        return executionHandler.handle(result);
     }
 
 }
