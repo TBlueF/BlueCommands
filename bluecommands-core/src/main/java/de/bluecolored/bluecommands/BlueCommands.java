@@ -99,7 +99,7 @@ public class BlueCommands<C> {
     }
 
     private Command<C, Object> createCommand(Object holder, Method method, String description) {
-        String[] tokens = description.trim().split(" +");
+        String[] tokens = description.isBlank() ? new String[0] : description.trim().split(" +");
         try {
             return createCommand(holder, method, tokens, 0);
         } catch (CommandSetupException ex) {
