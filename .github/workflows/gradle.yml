@@ -16,7 +16,7 @@ jobs:
         java-version: 11
     - name: Build with Gradle
       run: ./gradlew clean build test
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: artifact
         path: |
