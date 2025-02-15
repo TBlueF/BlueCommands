@@ -98,4 +98,13 @@ public class MethodCommandExecutable<C> implements CommandExecutable<C, Object> 
     public boolean isValid(C context) {
         return blueCommands.checkContext(context, method);
     }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public Object getHolder() {
+        return holder;
+    }
+
 }
