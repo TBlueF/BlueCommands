@@ -84,54 +84,58 @@ public final class BrigadierBridge {
 
             LiteralArgumentBuilder<D> builder = LiteralArgumentBuilder.literal(((LiteralCommand<C, T>) node).getLiteral());
             builder.requires(d -> node.isValid(contextConverter.apply(d)));
-            builder.executes(executor);
-
-            for (Command<C, ?> subCommand : node.getSubCommands()) {
-                createCommandNodes(List.of(subCommand), suggestionProvider, executor, contextConverter).forEach(builder::then);
-            }
+            if (node.getExecutable() != null) builder.executes(executor);
+            createCommandNodes(node.getSubCommands(), suggestionProvider, executor, contextConverter).forEach(builder::then);
 
             commandNodes.add(builder.build());
         }
 
-        // arguments
-        Set<ArgumentCommand<C, T>> argumentNodes = nodes.stream()
-                .filter(n -> n instanceof ArgumentCommand)
-                .map(n -> (ArgumentCommand<C, T>) n)
-                .collect(Collectors.toSet());
+        // group arguments by brigadier-type
+        // using an enum-map here sorts the arguments by their type as well (enum-ordinal) -> this is important
+        EnumMap<CommonNodeType, Set<ArgumentCommand<C, T>>> typedArguments = nodes.stream()
+                .filter(c -> c instanceof ArgumentCommand)
+                .map(c -> (ArgumentCommand<C, T>) c)
+                .collect(Collectors.groupingBy(
+                        CommonNodeType::getFor,
+                        () -> new EnumMap<>(CommonNodeType.class),
+                        Collectors.toSet()
+                ));
 
-        if (!argumentNodes.isEmpty()) {
-            CommonNodeType commonNodeType = argumentNodes.stream()
-                    .map(CommonNodeType::getFor)
-                    .max(Comparator.comparing(CommonNodeType::ordinal))
-                    .get();
+        // group string-type arguments together further
+        if (typedArguments.containsKey(CommonNodeType.WORD) && typedArguments.containsKey(CommonNodeType.STRING))
+            typedArguments.get(CommonNodeType.STRING).addAll(typedArguments.remove(CommonNodeType.WORD));
+        if (typedArguments.containsKey(CommonNodeType.STRING) && typedArguments.containsKey(CommonNodeType.GREEDY))
+            typedArguments.get(CommonNodeType.GREEDY).addAll(typedArguments.remove(CommonNodeType.STRING));
 
-            String commonNodeName;
-            if (argumentNodes.size() <= 3) {
-                commonNodeName = commonNodeType == CommonNodeType.GREEDY ? "..." : argumentNodes.stream()
-                        .map(ArgumentCommand::getArgumentId)
-                        .sorted()
-                        .collect(Collectors.joining("|"));
-            } else {
-                commonNodeName = "arg-" + UUID.randomUUID().toString().substring(0, 8);
-            }
+        typedArguments.forEach((type, arguments) -> {
 
-            RequiredArgumentBuilder<D, ?> builder = RequiredArgumentBuilder.argument(commonNodeName, commonNodeType.getArgumentType());
-            builder.suggests(suggestionProvider);
-            builder.requires(d -> {
-                C context = contextConverter.apply(d);
-                return argumentNodes.stream().anyMatch(arg -> arg.isValid(context));
-            });
-            builder.executes(executor);
+                    RequiredArgumentBuilder<D, ?> builder = RequiredArgumentBuilder.argument(
+                            getCommonArgumentId(type, arguments),
+                            type.getArgumentType()
+                    );
 
-            if (commonNodeType != CommonNodeType.GREEDY) {
-                Collection<Command<C, T>> subCommands = argumentNodes.stream()
-                        .flatMap(c -> c.getSubCommands().stream())
-                        .collect(Collectors.toSet());
-                createCommandNodes(subCommands, suggestionProvider, executor, contextConverter).forEach(builder::then);
-            }
+                    // only allow suggestions for string-types
+                    if (type == CommonNodeType.GREEDY || type == CommonNodeType.STRING || type == CommonNodeType.WORD)
+                        builder.suggests(suggestionProvider);
 
-            commandNodes.add(builder.build());
-        }
+                    builder.requires(d -> {
+                        C context = contextConverter.apply(d);
+                        return arguments.stream().anyMatch(arg -> arg.isValid(context));
+                    });
+
+                    if (arguments.stream().map(Command::getExecutable).anyMatch(Objects::nonNull))
+                        builder.executes(executor);
+
+                    if (type != CommonNodeType.GREEDY) {
+                        Collection<Command<C, T>> subCommands = arguments.stream()
+                                .flatMap(c -> c.getSubCommands().stream())
+                                .collect(Collectors.toSet());
+                        createCommandNodes(subCommands, suggestionProvider, executor, contextConverter).forEach(builder::then);
+                    }
+
+                    commandNodes.add(builder.build());
+
+                });
 
         return commandNodes;
     }
@@ -150,12 +154,26 @@ public final class BrigadierBridge {
         nodes.add(command);
 
         // handle optional commands
-        if (command instanceof ArgumentCommand && ((ArgumentCommand<C, T>) command).isOptional()) {
+        if (command.isOptional()) {
             for (var subCommand : command.getSubCommands()) {
                 collectNodes(subCommand, nodes);
             }
         }
 
+    }
+
+    private static <C, T> String getCommonArgumentId(CommonNodeType type, Collection<ArgumentCommand<C, T>> arguments) {
+        String commonNodeName;
+        if (arguments.size() <= 3) {
+            commonNodeName = type == CommonNodeType.GREEDY ? "..." : arguments.stream()
+                    .map(ArgumentCommand::getArgumentId)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.joining("|"));
+        } else {
+            commonNodeName = "arg-" + UUID.randomUUID().toString().substring(0, 8);
+        }
+        return commonNodeName;
     }
 
     private enum CommonNodeType {

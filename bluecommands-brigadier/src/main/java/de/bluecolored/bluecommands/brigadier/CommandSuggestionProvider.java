@@ -33,6 +33,7 @@ import de.bluecolored.bluecommands.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 class CommandSuggestionProvider<D> implements SuggestionProvider<D> {
