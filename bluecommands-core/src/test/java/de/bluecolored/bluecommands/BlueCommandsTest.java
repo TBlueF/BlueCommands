@@ -61,24 +61,29 @@ public class BlueCommandsTest {
         expected.put("some", null);
         expected.put("arguments", "arg2");
         assertEquals(expected, match.getArguments());
-        assertEquals(4, match.getCommandStack().size());
+        assertEquals(5, match.getCommandStack().size());
 
-        var stack1 = match.getCommandStack().get(0);
+        var stack0 = match.getCommandStack().get(0);
+        assertEquals(0, stack0.getPosition());
+        assertInstanceOf(de.bluecolored.bluecommands.Command.class, stack0.getCommand());
+        assertNull(stack0.getValue());
+
+        var stack1 = match.getCommandStack().get(1);
         assertEquals(0, stack1.getPosition());
         assertInstanceOf(LiteralCommand.class, stack1.getCommand());
         assertNull(stack1.getValue());
 
-        var stack2 = match.getCommandStack().get(1);
+        var stack2 = match.getCommandStack().get(2);
         assertEquals(5, stack2.getPosition());
         assertInstanceOf(ArgumentCommand.class, stack2.getCommand());
         assertEquals("arg1", stack2.getValue());
 
-        var stack3 = match.getCommandStack().get(2);
+        var stack3 = match.getCommandStack().get(3);
         assertEquals(10, stack3.getPosition());
         assertInstanceOf(ArgumentCommand.class, stack3.getCommand());
         assertNull(stack3.getValue());
 
-        var stack4 = match.getCommandStack().get(3);
+        var stack4 = match.getCommandStack().get(4);
         assertEquals(10, stack4.getPosition());
         assertInstanceOf(ArgumentCommand.class, stack4.getCommand());
         assertEquals("arg2", stack4.getValue());

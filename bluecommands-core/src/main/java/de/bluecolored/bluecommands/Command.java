@@ -63,7 +63,7 @@ public class Command<C, T> {
     }
 
     public ParseResult<C, T> parse(C context, InputReader input) {
-        ParseData<C, T> stack = new ParseData<>(context, input);
+        ParseData<C, T> stack = new ParseData<>(context, input, this);
         parse(stack);
         return stack.getResult();
     }

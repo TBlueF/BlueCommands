@@ -33,11 +33,12 @@ public class ParseData<C, T> {
     private final ParseResult<C, T> result;
     private final LinkedList<ParseSegment<C, T>> segments;
 
-    public ParseData(C context, InputReader input) {
+    public ParseData(C context, InputReader input, Command<C, T> initialSegment) {
         this.context = context;
         this.input = input;
         this.result = new ParseResult<>(context, input.getInput());
         this.segments = new LinkedList<>();
+        pushSegment(initialSegment);
     }
 
     public C getContext() {
