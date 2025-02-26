@@ -52,8 +52,8 @@ public class LiteralCommand<C, T> extends Command<C, T> {
             data.getResult().addFailure(new ParseFailure<>(
                     data.getCurrentSegment().getPosition(),
                     match == null ?
-                            String.format("Expected '%s', but got something else.", literal) :
-                            String.format("Expected '%s', but got '%s'.", literal, match.group()),
+                            "Unknown or incomplete command." :
+                            String.format("Unknown or incomplete command, got '%s' but expected something else.", match.group()),
                     data.getCommandStack(),
                     Collections.singletonList(new SimpleSuggestion(literal))
             ));
