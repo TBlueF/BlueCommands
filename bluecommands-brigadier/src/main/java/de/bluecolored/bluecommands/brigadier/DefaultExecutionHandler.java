@@ -24,6 +24,7 @@
  */
 package de.bluecolored.bluecommands.brigadier;
 
+import com.mojang.brigadier.Message;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import de.bluecolored.bluecommands.ParseFailure;
@@ -33,6 +34,7 @@ import de.bluecolored.bluecommands.ParseResult;
 import java.util.Comparator;
 
 public class DefaultExecutionHandler<C, T> implements CommandExecutionHandler<C, T> {
+    private static final Message DEFAULT_FAILURE_MESSAGE = () -> "Unknown or incomplete command!";
 
     @Override
     public int handle(ParseResult<C, T> parseResult) throws CommandSyntaxException {
@@ -56,7 +58,10 @@ public class DefaultExecutionHandler<C, T> implements CommandExecutionHandler<C,
     public int handleParseFailure(ParseResult<C, T> result) throws CommandSyntaxException {
         ParseFailure<C, ?> failure = result.getFailures().stream()
                 .max(Comparator.comparing(ParseFailure::getPosition))
-                .orElseThrow(IllegalAccessError::new);
+                .orElseThrow(() -> new CommandSyntaxException(
+                        new SimpleCommandExceptionType(DEFAULT_FAILURE_MESSAGE),
+                        DEFAULT_FAILURE_MESSAGE
+                ));
         throw new CommandSyntaxException(
                 new SimpleCommandExceptionType(failure::getReason),
                 failure::getReason,
